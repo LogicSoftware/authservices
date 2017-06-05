@@ -55,7 +55,41 @@ namespace Kentor.AuthServices.Metadata
                 throw new ArgumentNullException(nameof(metadataLocation));
             }
 
-            var result = Load(metadataLocation);
+            if (PathHelper.IsWebRootRelative(metadataLocation))
+            {
+                metadataLocation = PathHelper.MapPath(metadataLocation);
+            }
+
+            using (var client = new WebClient())
+            using (var stream = client.OpenRead(metadataLocation))
+            {
+                return LoadIdp(stream, unpackEntitiesDescriptor);
+            }
+        }
+
+
+        /// <summary>
+        /// Load and parse metadata.
+        /// </summary>
+        /// <param name="stream">Stream of metadata.</param>
+        /// <param name="unpackEntitiesDescriptor">If the metadata contains
+        /// an EntitiesDescriptor, try to unpack it and return a single
+        /// EntityDescriptor inside if there is one.</param>
+        /// <returns>EntityDescriptor containing metadata</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "EntityDescriptors")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "EntitiesDescriptor")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "EntityDescriptor")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "IdentityProvider")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "SPOptions")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "UnpackEntitiesDescriptorInIdentityProviderMetadata")]
+        public static ExtendedEntityDescriptor LoadIdp(Stream stream, bool unpackEntitiesDescriptor)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            var result = Load(stream);
 
             var entitiesDescriptor = result as ExtendedEntitiesDescriptor;
             if(entitiesDescriptor != null)
