@@ -41,6 +41,11 @@ namespace Kentor.AuthServices.WebSso
 
                     var samlResponse = new Saml2Response(unbindResult.Data, request.StoredRequestState?.MessageId);
 
+                    if (!options.IdentityProviders.TryGetValue(samlResponse.Issuer, out var idp))
+                    {
+                        options.Notifications.SelectIdentityProvider(samlResponse.Issuer, null);
+                    }
+
                     var result = ProcessResponse(options, samlResponse, request.StoredRequestState);
                     if(unbindResult.RelayState != null)
                     {
