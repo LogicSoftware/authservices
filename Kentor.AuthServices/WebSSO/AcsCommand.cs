@@ -41,11 +41,6 @@ namespace Kentor.AuthServices.WebSso
 
                     var samlResponse = new Saml2Response(unbindResult.Data, request.StoredRequestState?.MessageId);
 
-                    if (!options.IdentityProviders.TryGetValue(samlResponse.Issuer, out var idp))
-                    {
-                        options.Notifications.SelectIdentityProvider(samlResponse.Issuer, null);
-                    }
-
                     var result = ProcessResponse(options, samlResponse, request.StoredRequestState);
                     if(unbindResult.RelayState != null)
                     {
@@ -100,7 +95,8 @@ namespace Kentor.AuthServices.WebSso
             principal = options.SPOptions.SystemIdentityModelIdentityConfiguration
                 .ClaimsAuthenticationManager.Authenticate(null, principal);
 
-            if(options.SPOptions.ReturnUrl == null)
+            var returnUrl = options.Notifications.GetReturnUrl(storedRequestState) ?? options.SPOptions.ReturnUrl;
+            if (returnUrl == null)
             {
                 if (storedRequestState == null)
                 {
@@ -118,7 +114,7 @@ namespace Kentor.AuthServices.WebSso
             return new CommandResult()
             {
                 HttpStatusCode = HttpStatusCode.SeeOther,
-                Location = storedRequestState?.ReturnUrl ?? options.SPOptions.ReturnUrl,
+                Location = storedRequestState?.ReturnUrl ?? returnUrl,
                 Principal = principal,
                 RelayData = storedRequestState?.RelayData,
                 SessionNotOnOrAfter = samlResponse.SessionNotOnOrAfter

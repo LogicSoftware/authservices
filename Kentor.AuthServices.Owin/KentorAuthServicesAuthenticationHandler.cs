@@ -71,7 +71,8 @@ namespace Kentor.AuthServices.Owin
             }
             else
             {
-                var redirectUrl = Options.SPOptions.ReturnUrl;
+                var redirectUrl = Options.Notifications.GetReturnUrl(httpRequestData.StoredRequestState) ??
+                    Options.SPOptions.ReturnUrl;
 
                 if (redirectUrl == null)
                 {

@@ -16,6 +16,7 @@ namespace Kentor.AuthServices.Configuration
         /// <summary>
         /// Ctor, setting all callbacks to do-nothing versions.
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
         public KentorAuthServicesNotifications()
         {
             AuthenticationRequestCreated = (request, provider, dictionary) => { };
@@ -31,6 +32,7 @@ namespace Kentor.AuthServices.Configuration
             MetadataCreated = (md, urls) => { };
             MetadataCommandResultCreated = cr => { };
             ValidateAbsoluteReturnUrl = url => false;
+            GetReturnUrl = storedRequestState => null;
         }
 
         /// <summary>
@@ -148,5 +150,12 @@ namespace Kentor.AuthServices.Configuration
         /// When false is returned, the SignIn and Logout commands will throw an <see cref="InvalidOperationException"/>.
         /// </summary>
         public Func<string, bool> ValidateAbsoluteReturnUrl { get; set; }
+
+        /// <summary>
+        /// Notification called when a command is about to get the default return url to redirect the client to.
+        /// Return a non-null Uri if you need to override this per request.
+        /// Otherwise it will fall back to the normal logic that checks the SPOptions.ReturnUrl setting.
+        /// </summary>
+        public Func<StoredRequestState, Uri> GetReturnUrl { get; set; }
     }
 }

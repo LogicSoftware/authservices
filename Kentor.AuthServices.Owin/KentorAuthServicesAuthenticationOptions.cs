@@ -62,7 +62,7 @@ namespace Kentor.AuthServices.Owin
         /// <summary>
         /// Available identity providers.
         /// </summary>
-        public IdentityProviderDictionary IdentityProviders
+        public virtual IdentityProviderDictionary IdentityProviders
         {
             get
             {
