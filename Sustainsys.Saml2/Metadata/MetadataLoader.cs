@@ -60,12 +60,17 @@ namespace Sustainsys.Saml2.Metadata
 
             var result = Load(metadataLocation, null, false, null);
 
+            return ProcessIdpMetadata(result, unpackEntitiesDescriptor);
+        }
+
+        private static ExtendedEntityDescriptor ProcessIdpMetadata(MetadataBase result, bool unpackEntitiesDescriptor)
+        {
             var entitiesDescriptor = result as ExtendedEntitiesDescriptor;
-            if(entitiesDescriptor != null)
+            if (entitiesDescriptor != null)
             {
-                if(unpackEntitiesDescriptor)
+                if (unpackEntitiesDescriptor)
                 {
-                    if(entitiesDescriptor.ChildEntities.Count > 1)
+                    if (entitiesDescriptor.ChildEntities.Count > 1)
                     {
                         throw new InvalidOperationException(LoadIdpUnpackingFoundMultipleEntityDescriptors);
                     }
@@ -77,6 +82,35 @@ namespace Sustainsys.Saml2.Metadata
             }
 
             return (ExtendedEntityDescriptor)result;
+        }
+
+        /// <summary>
+        /// Load and parse metadata.
+        /// </summary>
+        /// <param name="stream">Stream with metadata</param>
+        /// <param name="unpackEntitiesDescriptor">If the metadata contains
+        /// an EntitiesDescriptor, try to unpack it and return a single
+        /// EntityDescriptor inside if there is one.</param>
+        /// <returns>EntityDescriptor containing metadata</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "EntityDescriptors")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "SPOptions")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "UnpackEntitiesDescriptorInIdentityProviderMetadata")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "EntitiesDescriptor")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "EntityDescriptor")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "IdentityProvider")]
+        public static ExtendedEntityDescriptor LoadIdp(Stream stream, bool unpackEntitiesDescriptor)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            var reader = XmlDictionaryReader.CreateTextReader(
+                    stream,
+                    XmlDictionaryReaderQuotas.Max);
+
+            var result = Load(reader);
+            return ProcessIdpMetadata(result, unpackEntitiesDescriptor);
         }
 
         private static MetadataBase Load(
